@@ -1,0 +1,8 @@
+/vendor/
+/composer.lock
+/cache/
+/.idea/
+/.vscode/
+.env
+.DS_Store
+Thumbs.db
