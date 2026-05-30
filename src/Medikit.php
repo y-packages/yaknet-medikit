@@ -31,7 +31,7 @@ class Medikit
             return new self('', false); // Dummy instance, won't register handler
         }
 
-        $apiKey = $apiKey ?? $_ENV['GEMINI_API_KEY'] ?? getenv('GEMINI_API_KEY') ?? throw new \InvalidArgumentException('Gemini API Key is required for Medikit.');
+        $apiKey = $apiKey ?? $_ENV['GEMINI_API_KEY'] ?? (getenv('GEMINI_API_KEY') ?: null) ?? throw new \InvalidArgumentException('Gemini API Key is required for Medikit.');
 
         if (self::$instance === null) {
             self::$instance = new self($apiKey, $autoHealing);
