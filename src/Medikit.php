@@ -40,6 +40,14 @@ class Medikit
         return self::$instance;
     }
 
+    /**
+     * Check if auto-healing is enabled.
+     */
+    public function isAutoHealing(): bool
+    {
+        return $this->autoHealing;
+    }
+
     private static function checkDebugMode(): bool
     {
         // Simple .env check in current or parent directories

@@ -11,6 +11,7 @@ class Diagnosis
         public readonly string $explanation,
         public readonly string $suggestedFix,
         public readonly float $confidence = 0.0,
+        /** @var array<string, mixed> */
         public readonly array $meta = []
     ) {
     }

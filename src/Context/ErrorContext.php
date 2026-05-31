@@ -12,6 +12,7 @@ class ErrorContext
         public readonly string $file,
         public readonly int $line,
         public readonly string $snippet,
+        /** @var array<int, mixed> */
         public readonly array $stackTrace
     ) {
     }
