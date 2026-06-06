@@ -43,13 +43,32 @@ class GeminiHealer
                 ]
             ]);
 
-            $result = json_decode($response->getBody()->getContents(), true);
-            $jsonResponse = json_decode($result['candidates'][0]['content']['parts'][0]['text'], true);
+            $body = $response->getBody()->getContents();
+            $result = json_decode($body, true);
+            if (!is_array($result)) {
+                throw new \RuntimeException("Invalid response from Gemini API.");
+            }
+
+            /** @var array<int, array{content?: array{parts?: array<int, array{text?: string}>}}> $candidates */
+            $candidates = $result['candidates'] ?? [];
+            $rawText = $candidates[0]['content']['parts'][0]['text'] ?? null;
+            if (!is_string($rawText)) {
+                throw new \RuntimeException("Failed to extract content text from Gemini API response.");
+            }
+
+            $jsonResponse = json_decode($rawText, true);
+            if (!is_array($jsonResponse)) {
+                throw new \RuntimeException("Invalid JSON inside Gemini API response text.");
+            }
+
+            $explanation = $jsonResponse['explanation'] ?? 'No explanation provided.';
+            $suggestedFix = $jsonResponse['suggested_fix'] ?? '';
+            $confidenceRaw = $jsonResponse['confidence'] ?? 0.0;
 
             return new Diagnosis(
-                explanation: $jsonResponse['explanation'] ?? 'No explanation provided.',
-                suggestedFix: $jsonResponse['suggested_fix'] ?? '',
-                confidence: (float)($jsonResponse['confidence'] ?? 0.0)
+                explanation: is_string($explanation) ? $explanation : 'No explanation provided.',
+                suggestedFix: is_string($suggestedFix) ? $suggestedFix : '',
+                confidence: is_numeric($confidenceRaw) ? (float) $confidenceRaw : 0.0
             );
 
         } catch (\Throwable $e) {

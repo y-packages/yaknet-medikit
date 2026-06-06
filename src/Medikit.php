@@ -11,7 +11,7 @@ use YakNet\Medikit\Healer\GeminiHealer;
 class Medikit
 {
     private static ?self $instance = null;
-    private ?GeminiHealer $healer = null;
+    private GeminiHealer $healer;
 
     private function __construct(
         private readonly string $apiKey,
@@ -31,7 +31,20 @@ class Medikit
             return new self('', false); // Dummy instance, won't register handler
         }
 
-        $apiKey = $apiKey ?? $_ENV['GEMINI_API_KEY'] ?? (getenv('GEMINI_API_KEY') ?: null) ?? throw new \InvalidArgumentException('Gemini API Key is required for Medikit.');
+        $apiKeyEnv = $apiKey;
+        if ($apiKeyEnv === null) {
+            $apiKeyEnv = $_ENV['GEMINI_API_KEY'] ?? null;
+        }
+        if ($apiKeyEnv === null) {
+            $envVal = getenv('GEMINI_API_KEY');
+            if (is_string($envVal)) {
+                $apiKeyEnv = $envVal;
+            }
+        }
+        if (!is_string($apiKeyEnv) || $apiKeyEnv === '') {
+            throw new \InvalidArgumentException('Gemini API Key is required for Medikit.');
+        }
+        $apiKey = $apiKeyEnv;
 
         if (self::$instance === null) {
             self::$instance = new self($apiKey, $autoHealing);
@@ -54,6 +67,9 @@ class Medikit
         $envPath = getcwd() . '/.env';
         if (file_exists($envPath)) {
             $content = file_get_contents($envPath);
+            if ($content === false) {
+                return false;
+            }
             return str_contains($content, 'MEDIKIT_DEBUG=true');
         }
         return false;
@@ -105,7 +121,8 @@ class Medikit
             echo "----------------------------------------\n";
 
             echo "\e[33mWould you like me to attempt a repair? (y/n): \e[0m";
-            $answer = strtolower(trim(fgets(STDIN)));
+            $input = fgets(STDIN);
+            $answer = strtolower(trim(is_string($input) ? $input : ''));
             if ($answer === 'y') {
                 echo "\e[32m[MEDIKIT] Repairing process initiated... (Feature in development)\e[0m\n";
                 // Future: Implement actual file patching here

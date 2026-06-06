@@ -42,6 +42,9 @@ class ErrorContext
         }
 
         $lines = file($file);
+        if ($lines === false) {
+            return "Unable to read file: $file";
+        }
         $start = max(0, $targetLine - $range - 1);
         $end = min(count($lines), $targetLine + $range);
 
